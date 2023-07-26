@@ -1,41 +1,23 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © parthaveltrader
 
-# Set up the SMTP server connection
-smtp_server = "smtp.gmail.com"
-smtp_port = 587
-smtp_username = "your-email@gmail.com"
-smtp_password = "your-email-password"
+//@version=5
+indicator("Price cross two sma", overlay = true)
 
-# Create the message object
-msg = MIMEMultipart('alternative')
-msg['From'] = "your-email@gmail.com"
-msg['To'] = "recipient-email@example.com"
-msg['Subject'] = "Test email with plain text and HTML content"
+SMA1 = input.int(5, minval=1, title="fast sma")
+SMA2 = input.int(20, minval=1, title="slow sma")
+showLong = input.bool(defval = true)
+showShort = input.bool(defval = true)
+fastSma = ta.sma(close, SMA1)
+slowSma = ta.sma(close, SMA2)
 
-# Create the plain text message body
-text = "Hello, this is a test email with plain text content."
-
-# Create the HTML message body
-html = """\
-<html>
-  <body>
-    <p>Hello,<br>
-       This is a test email with <b>HTML</b> content.
-    </p>
-  </body>
-</html>
-"""
-
-# Attach both the plain text and HTML versions of the message body
-part1 = MIMEText(text, 'plain')
-part2 = MIMEText(html, 'html')
-msg.attach(part1)
-msg.attach(part2)
-
-# Send the message via the SMTP server
-with smtplib.SMTP(smtp_server, smtp_port) as server:
-    server.starttls()
-    server.login(smtp_username, smtp_password)
-    server.sendmail(smtp_username, msg['To'], msg.as_string())
+green = close > open
+red = open > close
+longCondition = false
+shortCondition = false
+if (showLong)
+    longCondition := green and close >= fastSma and close >= slowSma and fastSma <= slowSma and open <= slowSma
+if (showShort)    
+    shortCondition := red and close <= fastSma and close <= slowSma and fastSma >= slowSma and open >= slowSma
+plotshape(longCondition, style=shape.diamond, color=color.green, location=location.belowbar, size = size.tiny, text = "", textcolor = color.yellow)
+plotshape(shortCondition, style=shape.diamond, color=color.red, location=location.abovebar, size = size.tiny, text = "", textcolor = color.yellow)
